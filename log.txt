@@ -1,0 +1,1 @@
+Board contains cell with invalid initial.
