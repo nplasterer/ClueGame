@@ -1,3 +1,5 @@
+package GUI;
+
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;

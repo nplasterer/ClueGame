@@ -1,6 +1,8 @@
 package clueBoard;
 import java.awt.Color;
 import java.awt.Point;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.lang.reflect.Field;
@@ -12,6 +14,11 @@ import java.util.Random;
 import java.util.Scanner;
 
 import javax.swing.JFrame;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+
+import GUI.DetectiveNotes;
 
 public class ClueGame extends JFrame{
 	private ArrayList<ComputerPlayer> computer;
@@ -23,6 +30,8 @@ public class ClueGame extends JFrame{
 	private Player currentPlayer;
 	private String playerFile;
 	private String cardFile;
+	private JMenuBar menuBar;
+	private JMenu file;
 
 	public ClueGame() {
 		computer = new ArrayList<ComputerPlayer>();
@@ -31,7 +40,7 @@ public class ClueGame extends JFrame{
 		human = new HumanPlayer();
 		setPlayerFile("Players.txt");
 		setCardFile("Cards.txt");
-		//drawBoard();
+		drawBoard();
 	}
 	
 	public void deal(){
@@ -257,16 +266,51 @@ public class ClueGame extends JFrame{
 		}
 	}
 
-	public void drawBoard(Board board){
+	public void drawBoard(/*Board board*/){
+		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		setTitle("Clue Game");
+		setSize(600, 600);
+		menuBar = new JMenuBar();
+		file = new JMenu("File");
+		file.add(createFileExitItem());
+		file.add(showDetectiveNotes());
+		setJMenuBar(menuBar);
+		menuBar.add(file);
+		
 		//Control Panel and Current Cards
 		//board = BoardLayout.Center
 		
 		//Control Panel South
 		//Current Cards East
+		setVisible(true);
 	}
 	
+	private JMenuItem createFileExitItem()
+	{
+	  JMenuItem item = new JMenuItem("Exit");
+	  class MenuItemListener implements ActionListener {
+	    public void actionPerformed(ActionEvent e)
+	    {
+	       System.exit(0);
+	    }
+	  }
+	  item.addActionListener(new MenuItemListener());
+	  return item;
+	}
 	
-	
+	private JMenuItem showDetectiveNotes()
+	{
+	 final DetectiveNotes notes = new DetectiveNotes();
+	  JMenuItem item = new JMenuItem("Detective Notes");
+	  class MenuItemListener implements ActionListener {
+	    public void actionPerformed(ActionEvent e)
+	    {
+	       notes.Setup();
+	    }
+	  }
+	  item.addActionListener(new MenuItemListener());
+	  return item;
+	}
 	
 	//Getters and Setters for tests
 	public Solution getAnswer() {
@@ -320,5 +364,9 @@ public class ClueGame extends JFrame{
 
 	public void setCardFile(String cardFile) {
 		this.cardFile = cardFile;
+	}
+	
+	public static void main(String[] args) {
+		ClueGame clue = new ClueGame();
 	}
 }

@@ -1,3 +1,4 @@
+package GUI;
 import java.awt.FlowLayout;
 
 import javax.swing.JCheckBox;

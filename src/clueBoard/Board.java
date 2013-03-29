@@ -161,16 +161,6 @@ public class Board extends JPanel {
 			}
 		}
 		
-		//set cell rows and columns
-		int indexTracker = 0;
-		for(int row = 0;row < numRows;row++){
-            for(int col = 0; col < numColumns;col++){
-                cells.get(indexTracker).setCellRow(row);
-                cells.get(indexTracker).setCellColumn(col);
-            }
-            indexTracker++;
-		}
-		
 		//Populates the the visited list to be false for all cells
 		for (int i = 0; i < numRows * numColumns; i++) {
 			visited.add(false);
