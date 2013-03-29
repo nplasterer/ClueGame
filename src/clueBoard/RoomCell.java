@@ -106,5 +106,29 @@ public class RoomCell extends BoardCell {
 	public void draw(Graphics g, Board board) {
 		g.setColor(Color.CYAN);
 		g.fillRect(getCellColumn()*25, getCellRow()*25, 25, 25);
+		
+		g.setColor(Color.DARK_GRAY);
+		switch(doorDirection){
+		case NONE:
+			break;
+		case LEFT:
+			g.fillRect(getCellColumn()*25, getCellRow()*25, 5, 25);
+			break;
+		case DOWN:
+			g.fillRect(getCellColumn()*25, (getCellRow()*25) + 20, 25, 5);
+			break;
+		case UP:
+			g.fillRect(getCellColumn()*25, getCellRow()*25, 25, 5);
+			break;
+		case RIGHT:
+			g.fillRect((getCellColumn()*25) +20, getCellRow()*25, 5, 25);
+			break;
+		default:
+				break;
+		}
+		
+		if(secondInitial == 'N'){
+			g.drawString(board.getRooms().get(roomInitial), getCellColumn()*25, getCellRow()*25);
+		}
 	}
 }
