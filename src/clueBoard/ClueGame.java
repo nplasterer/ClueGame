@@ -1,4 +1,6 @@
 package clueBoard;
+
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
@@ -40,7 +42,6 @@ public class ClueGame extends JFrame{
 		human = new HumanPlayer();
 		setPlayerFile("Players.txt");
 		setCardFile("Cards.txt");
-		drawBoard();
 	}
 	
 	public void deal(){
@@ -266,19 +267,19 @@ public class ClueGame extends JFrame{
 		}
 	}
 
-	public void drawBoard(/*Board board*/){
+	public void drawBoard(Board board){
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setTitle("Clue Game");
 		setSize(600, 600);
 		menuBar = new JMenuBar();
 		file = new JMenu("File");
-		file.add(createFileExitItem());
 		file.add(showDetectiveNotes());
+		file.add(createFileExitItem());
 		setJMenuBar(menuBar);
 		menuBar.add(file);
+		add(board, BorderLayout.CENTER);
 		
 		//Control Panel and Current Cards
-		//board = BoardLayout.Center
 		
 		//Control Panel South
 		//Current Cards East
@@ -366,7 +367,12 @@ public class ClueGame extends JFrame{
 		this.cardFile = cardFile;
 	}
 	
+	
+	
 	public static void main(String[] args) {
 		ClueGame clue = new ClueGame();
+		Board board = new Board();
+		board.loadConfigFiles();
+		clue.drawBoard(board);
 	}
 }

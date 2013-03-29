@@ -1,5 +1,6 @@
 package clueBoard;
 
+import java.awt.Color;
 import java.awt.Graphics;
 
 public class RoomCell extends BoardCell {
@@ -103,6 +104,8 @@ public class RoomCell extends BoardCell {
 	
 	@Override
 	public void draw(Graphics g, Board board) {
+		g.setColor(Color.CYAN);
+		g.fillRect(getCellColumn()*20, getCellRow()*20, 20, 20);
 		
 	}
 }

@@ -83,9 +83,4 @@ public class ControlPanel {
 		jf.setVisible(true);
 	}
 	
-	public static void main(String[] args) {
-
-		// TODO, add your application code
-		new ControlPanel();
-	}
 }
