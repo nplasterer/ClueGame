@@ -137,6 +137,10 @@ public class Board extends JPanel {
 				if (fileLineSplit[i].charAt(0) == 'W') {
 					tempCell = new WalkwayCell();
 					tempCell.setIndex(indexCount);
+					
+					tempCell.setCellRow(indexCount/numColumns);
+					tempCell.setCellColumn(indexCount%numColumns);
+					
 					cells.add(tempCell);
 				} else if (fileLineSplit[i].charAt(0) == 'C' || fileLineSplit[i].charAt(0) == 'K' || 
 						fileLineSplit[i].charAt(0) == 'B' || fileLineSplit[i].charAt(0) == 'R' ||
@@ -145,6 +149,10 @@ public class Board extends JPanel {
 						fileLineSplit[i].charAt(0) =='H' || fileLineSplit[i].charAt(0) == 'X') {
 					tempCell = new RoomCell(fileLineSplit[i]);
 					tempCell.setIndex(indexCount);
+					
+					tempCell.setCellRow(indexCount/numColumns);
+					tempCell.setCellColumn(indexCount%numColumns);
+					
 					cells.add(tempCell);
 				} else {
 					throw new BadConfigFormatException("Board contains cell with invalid initial.");

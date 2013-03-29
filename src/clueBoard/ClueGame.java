@@ -270,7 +270,7 @@ public class ClueGame extends JFrame{
 	public void drawBoard(Board board){
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setTitle("Clue Game");
-		setSize(600, 600);
+		setSize(600, 625);
 		menuBar = new JMenuBar();
 		file = new JMenu("File");
 		file.add(showDetectiveNotes());
