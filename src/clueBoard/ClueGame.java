@@ -222,6 +222,7 @@ public class ClueGame extends JFrame{
 			numRows++;
 		}
 		playerScanner.close();
+		
 	}
 	
     // Be sure to trim the color, we don't want spaces around the name
@@ -370,8 +371,13 @@ public class ClueGame extends JFrame{
 	
 	
 	public static void main(String[] args) {
+		ArrayList<Player> players = new ArrayList<Player>();
 		ClueGame clue = new ClueGame();
-		Board board = new Board();
+		clue.loadConfigFiles();
+		for(ComputerPlayer cp: clue.getComputer())
+			players.add(cp);
+		players.add(clue.getHuman());
+		Board board = new Board(players);
 		board.loadConfigFiles();
 		clue.drawBoard(board);
 	}

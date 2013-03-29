@@ -1,5 +1,7 @@
 package clueBoard;
 //Naomi and Brandon
+import java.awt.Color;
+import java.awt.Graphics;
 import java.util.ArrayList;
 import java.util.Random;
 
@@ -30,8 +32,6 @@ public class Player {
 		Random rand = new Random();
 		ArrayList<Card> hand = new ArrayList<Card>();
 		hand = cards;
-		//for(Card c: hand)
-			//System.out.println(c.getCard());
 		
 		while (!hand.isEmpty())
 		{
@@ -52,6 +52,11 @@ public class Player {
 	public void acceptCard(Card card) {
 		cards.add(card);
 		seen.add(card);
+	}
+	
+	public void draw(Graphics g){
+		g.setColor(color);
+		g.fillOval(location.x*25, location.y*25, 25, 25);
 	}
 
 	

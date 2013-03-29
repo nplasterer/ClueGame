@@ -31,6 +31,7 @@ public class Board extends JPanel {
 	private HashSet<BoardCell> targets;
 	private ArrayList<Integer> grid;
 	private ArrayList<Boolean> visited;
+	private ArrayList<Player> players;
 
 	
 	/******************************************************************************************************************
@@ -47,6 +48,19 @@ public class Board extends JPanel {
 		targets = new HashSet<BoardCell>();
 		adjMatrix = new HashMap<Integer, LinkedList<Integer>>();
 		visited = new ArrayList<Boolean>();
+		players = null;
+	}
+	
+	public Board(ArrayList<Player> player) {
+		cells = new ArrayList<BoardCell>();
+		rooms = new HashMap<Character, String>();
+		boardFile = "ClueLayout.csv";
+		legendFile = "ClueLegend.txt";
+		grid = new ArrayList<Integer>();
+		targets = new HashSet<BoardCell>();
+		adjMatrix = new HashMap<Integer, LinkedList<Integer>>();
+		visited = new ArrayList<Boolean>();
+		players = player;
 	}
 
 	/******************************************************************************************************************
@@ -471,6 +485,12 @@ public class Board extends JPanel {
 		setLayout(new GridLayout(24, 24));
 		for(BoardCell c: cells){
 			c.draw(g, this);
+		}
+		
+		if(players!=null){
+			for(Player p: players){
+				p.draw(g);
+			}
 		}
 	}
 
