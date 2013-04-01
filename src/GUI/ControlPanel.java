@@ -14,6 +14,8 @@ import javax.swing.JTextField;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
 
+import clueBoard.Player;
+
 public class ControlPanel {
 
 	JLabel l1, l2, l3, l4;
@@ -50,10 +52,9 @@ public class ControlPanel {
 		}});
 	}
 	
-	public Container setup(){
-
+	public Container setup(Player player){
 		//add correct name of the player correct roll and correct guess etc..
-		tf1.setText("Name");
+		tf1.setText(""/*player.getName()*/);
 		tf1.setEditable(false);
 		
 		tf2.setText("5");

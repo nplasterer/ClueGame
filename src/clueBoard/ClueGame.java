@@ -43,6 +43,7 @@ public class ClueGame extends JFrame{
 	private JMenu file;
 	private ControlPanel control;
 	private MyCards mycards;
+	private Board board;
 
 	public ClueGame() {
 		computer = new ArrayList<ComputerPlayer>();
@@ -290,10 +291,9 @@ public class ClueGame extends JFrame{
 		setJMenuBar(menuBar);
 		menuBar.add(file);
 		add(board, BorderLayout.CENTER);
-		add(control.setup(), BorderLayout.SOUTH);
-		add(mycards.setup(), BorderLayout.EAST);
+		add(control.setup(currentPlayer), BorderLayout.SOUTH);
+		add(mycards.setup(human.getCards()), BorderLayout.EAST);
 		
-		//Current Cards East
 		setVisible(true);
 	}
 	
@@ -379,12 +379,23 @@ public class ClueGame extends JFrame{
 	}
 	
 	public void splashScreen(){
+		//Do game setup
+		ArrayList<Player> players = new ArrayList<Player>();
+		loadConfigFiles();
+		for(ComputerPlayer cp: getComputer())
+			players.add(cp);
+		players.add(getHuman());
+		board = new Board(players);
+		board.loadConfigFiles();
+		deal();
+		
+		//Splash Screen
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		final JDialog dialog = new JDialog();
 		dialog.setTitle("Welcome to Clue");
 		dialog.setSize(350, 100);
 		dialog.setLayout(new FlowLayout());
-		JLabel message = new JLabel("You are Miss Scarlet, press Next Player to begin play");
+		JLabel message = new JLabel("You are " + getHuman().getName() +", press Next Player to begin play");
 		JButton okButton = new JButton("OK");
 		dialog.add(message);
 		dialog.add(okButton);
@@ -394,14 +405,7 @@ public class ClueGame extends JFrame{
 		okButton.addActionListener(new ActionListener(){ public void actionPerformed(ActionEvent e)
 		{
 			dialog.setVisible(false);
-			ArrayList<Player> players = new ArrayList<Player>();
-			loadConfigFiles();
-			for(ComputerPlayer cp: getComputer())
-				players.add(cp);
-			players.add(getHuman());
-			Board board = new Board(players);
-			board.loadConfigFiles();
-			
+			//Draw the Board
 			drawBoard(board);
 		}});
 	}

@@ -35,7 +35,7 @@ public class DetectiveNotes {
 		pane.add(room.displayCheckBoxes());
 		pane.add(room.displayDropDowns());
 		
-		jf.setDefaultCloseOperation(jf.EXIT_ON_CLOSE);
+		jf.setDefaultCloseOperation(jf.HIDE_ON_CLOSE);
 		jf.setVisible(true);
 	}
 }
