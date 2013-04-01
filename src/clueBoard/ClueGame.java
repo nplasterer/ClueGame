@@ -2,6 +2,7 @@ package clueBoard;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.FlowLayout;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -15,12 +16,18 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Scanner;
 
+import javax.swing.JButton;
+import javax.swing.JDialog;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 
+import GUI.ControlPanel;
 import GUI.DetectiveNotes;
+import GUI.MyCards;
 
 public class ClueGame extends JFrame{
 	private ArrayList<ComputerPlayer> computer;
@@ -34,6 +41,8 @@ public class ClueGame extends JFrame{
 	private String cardFile;
 	private JMenuBar menuBar;
 	private JMenu file;
+	private ControlPanel control;
+	private MyCards mycards;
 
 	public ClueGame() {
 		computer = new ArrayList<ComputerPlayer>();
@@ -269,9 +278,11 @@ public class ClueGame extends JFrame{
 	}
 
 	public void drawBoard(Board board){
+		control = new ControlPanel();
+		mycards = new MyCards();
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setTitle("Clue Game");
-		setSize(600, 625);
+		setSize(730, 725);
 		menuBar = new JMenuBar();
 		file = new JMenu("File");
 		file.add(showDetectiveNotes());
@@ -279,10 +290,9 @@ public class ClueGame extends JFrame{
 		setJMenuBar(menuBar);
 		menuBar.add(file);
 		add(board, BorderLayout.CENTER);
+		add(control.setup(), BorderLayout.SOUTH);
+		add(mycards.setup(), BorderLayout.EAST);
 		
-		//Control Panel and Current Cards
-		
-		//Control Panel South
 		//Current Cards East
 		setVisible(true);
 	}
@@ -368,17 +378,45 @@ public class ClueGame extends JFrame{
 		this.cardFile = cardFile;
 	}
 	
-	
+	public void splashScreen(){
+		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		final JDialog dialog = new JDialog();
+		dialog.setTitle("Welcome to Clue");
+		dialog.setSize(350, 100);
+		dialog.setLayout(new FlowLayout());
+		JLabel message = new JLabel("You are Miss Scarlet, press Next Player to begin play");
+		JButton okButton = new JButton("OK");
+		dialog.add(message);
+		dialog.add(okButton);
+		dialog.setLocationRelativeTo(null);
+		dialog.setVisible(true);
+		
+		okButton.addActionListener(new ActionListener(){ public void actionPerformed(ActionEvent e)
+		{
+			dialog.setVisible(false);
+			ArrayList<Player> players = new ArrayList<Player>();
+			loadConfigFiles();
+			for(ComputerPlayer cp: getComputer())
+				players.add(cp);
+			players.add(getHuman());
+			Board board = new Board(players);
+			board.loadConfigFiles();
+			
+			drawBoard(board);
+		}});
+	}
 	
 	public static void main(String[] args) {
-		ArrayList<Player> players = new ArrayList<Player>();
 		ClueGame clue = new ClueGame();
+		/*ArrayList<Player> players = new ArrayList<Player>();
 		clue.loadConfigFiles();
 		for(ComputerPlayer cp: clue.getComputer())
 			players.add(cp);
 		players.add(clue.getHuman());
 		Board board = new Board(players);
 		board.loadConfigFiles();
-		clue.drawBoard(board);
+		
+		clue.drawBoard(board);*/
+		clue.splashScreen();
 	}
 }

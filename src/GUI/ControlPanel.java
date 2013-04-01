@@ -3,6 +3,8 @@ package GUI;
 import java.awt.Container;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -14,28 +16,43 @@ import javax.swing.border.TitledBorder;
 
 public class ControlPanel {
 
-	JLabel l1, l2;
-	JTextField tf1, tf2;
+	JLabel l1, l2, l3, l4;
+	JTextField tf1, tf2, tf3, tf4;
 	JButton b1, b2;
+	JFrame jf;
 	
 	public ControlPanel(){
-		JFrame jf = new JFrame();
-		jf.setTitle("Clue Game");
+		jf = new JFrame();
 		jf.setSize(800, 300);
+		
+		l1 = new JLabel("Whose turn?");
+		l2 = new JLabel("Roll");
+		l3 = new JLabel("Guess");
+		l4 = new JLabel("Response");
+		
+		tf1 = new JTextField(20);
+		tf2 = new JTextField(2);
+		tf3 = new JTextField(20);
+		tf4 = new JTextField(20);
+		
+		b1 = new JButton("Next Player");
+		b1.addActionListener(new ActionListener(){ public void actionPerformed(ActionEvent e)
+		{
+			//add functionality
+			System.out.println("Button Pressed");
+		}});
+		
+		b2 = new JButton("Make An Accusation");	
+		b2.addActionListener(new ActionListener(){ public void actionPerformed(ActionEvent e)
+		{
+			//add functionality
+			System.out.println("Button Pressed");
+		}});
+	}
+	
+	public Container setup(){
 
-		JLabel l1 = new JLabel("Whose turn?");
-		JLabel l2 = new JLabel("Roll");
-		JLabel l3 = new JLabel("Guess");
-		JLabel l4 = new JLabel("Response");
-
-		JTextField tf1 = new JTextField(20);
-		JTextField tf2 = new JTextField(2);
-		JTextField tf3 = new JTextField(20);
-		JTextField tf4 = new JTextField(20);
-
-		JButton b1 = new JButton("Next Player");
-		JButton b2 = new JButton("Make An Accusation");
-
+		//add correct name of the player correct roll and correct guess etc..
 		tf1.setText("Name");
 		tf1.setEditable(false);
 		
@@ -60,13 +77,13 @@ public class ControlPanel {
 
 		JPanel guess = new JPanel();
 		guess.setBorder(new TitledBorder(new EtchedBorder(), "Guess"));
-		guess.add(l3);
+		//guess.add(l3);
 		guess.add(tf3);
 
 		JPanel response = new JPanel();
-		response.setLayout(new FlowLayout());
+		//response.setLayout(new FlowLayout());
 		response.setBorder(new TitledBorder(new EtchedBorder(), "Guess Result"));
-		response.add(l4);
+		//response.add(l4);
 		response.add(tf4);
 
 		Container pane = jf.getContentPane();
@@ -78,9 +95,9 @@ public class ControlPanel {
 		pane.add(die);
 		pane.add(guess);
 		pane.add(response);
-
-		jf.setDefaultCloseOperation(jf.EXIT_ON_CLOSE);
-		jf.setVisible(true);
+		
+		return pane;
+		
 	}
 	
 }
