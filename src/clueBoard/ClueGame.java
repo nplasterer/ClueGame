@@ -25,6 +25,8 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 
+import clueBoard.Card.cardType;
+
 import GUI.ControlPanel;
 import GUI.DetectiveNotes;
 import GUI.MyCards;
@@ -56,38 +58,58 @@ public class ClueGame extends JFrame{
 	
 	public void deal(){
 		selectAnswer();
+		ArrayList<Card> rooms = new ArrayList<Card>();
+		ArrayList<Card> weapons = new ArrayList<Card>();
+		ArrayList<Card> person = new ArrayList<Card>();
+		for(Card c : cards){
+			if(c.getType() == Card.cardType.ROOM)
+				rooms.add(c);
+			else if(c.getType() == Card.cardType.WEAPON)
+				weapons.add(c);
+			else
+				person.add(c);
+			
+		}
+		Random roller = new Random();
+		int cardIndex = roller.nextInt(rooms.size());
+		human.acceptCard(rooms.get(cardIndex));
+		cards.remove(rooms.get(cardIndex));
+		cardIndex = roller.nextInt(weapons.size());
+		human.acceptCard(weapons.get(cardIndex));
+		cards.remove(weapons.get(cardIndex));
+		cardIndex = roller.nextInt(person.size());
+		human.acceptCard(person.get(cardIndex));
+		cards.remove(person.get(cardIndex));
+		
 		int dealt = 0;
 		while(!cards.isEmpty()) {
-			int index = dealt % 6;
+			int index = dealt % 5;
 			Player dealtTo = null;
 			Card toBeDealt;
 			switch(index) {
 			case 0:
-				dealtTo = human;
-				break;
-			case 1:
 				dealtTo = computer.get(0);
 				break;
-			case 2:
+			case 1:
 				dealtTo = computer.get(1);
 				break;
-			case 3:
+			case 2:
 				dealtTo = computer.get(2);
 				break;
-			case 4:
+			case 3:
 				dealtTo = computer.get(3);
 				break;
-			case 5:
+			case 4:
 				dealtTo = computer.get(4);
 				break;
 			}
-			Random roller = new Random();
-			int cardIndex = roller.nextInt(cards.size());
+			cardIndex = roller.nextInt(cards.size());
 			toBeDealt = cards.get(cardIndex);
 			dealtTo.acceptCard(toBeDealt);
 			cards.remove(cardIndex);
 			dealt++;
 		}
+		
 	}
 	
 	public void loadConfigFiles(){
@@ -388,6 +410,7 @@ public class ClueGame extends JFrame{
 		board = new Board(players);
 		board.loadConfigFiles();
 		deal();
+		currentPlayer = human;
 		
 		//Splash Screen
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);

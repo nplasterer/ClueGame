@@ -54,7 +54,7 @@ public class ControlPanel {
 	
 	public Container setup(Player player){
 		//add correct name of the player correct roll and correct guess etc..
-		tf1.setText(""/*player.getName()*/);
+		tf1.setText(player.getName());
 		tf1.setEditable(false);
 		
 		tf2.setText("5");

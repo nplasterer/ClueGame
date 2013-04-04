@@ -1,1 +1,1 @@
-Board contains cell with invalid initial.
+There is at least one row containing an inconsistent number of columns.
