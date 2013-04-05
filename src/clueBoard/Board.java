@@ -32,6 +32,7 @@ public class Board extends JPanel {
 	private ArrayList<Integer> grid;
 	private ArrayList<Boolean> visited;
 	private ArrayList<Player> players;
+	private boolean humanTurn;
 
 	
 	/******************************************************************************************************************
@@ -49,6 +50,7 @@ public class Board extends JPanel {
 		adjMatrix = new HashMap<Integer, LinkedList<Integer>>();
 		visited = new ArrayList<Boolean>();
 		players = null;
+		humanTurn = false;
 	}
 	
 	public Board(ArrayList<Player> player) {
@@ -492,7 +494,30 @@ public class Board extends JPanel {
 				p.draw(g);
 			}
 		}
+		
+		if(humanTurn) {
+			for(BoardCell c: targets) {
+				c.drawTurn(g, this);
+			}
+		}
 	}
+	
+	/*public void drawHumanTiles(Graphics g) {
+		super.paintComponent(g);
+		setLayout(new GridLayout(24, 24));
+		for(BoardCell c: cells){
+			c.draw(g, this);
+		}
+		
+		if(players!=null){
+			for(Player p: players){
+				p.draw(g);
+			}
+		}
+		
+		for(BoardCell c: targets)
+			c.drawTurn(g, this);
+	}*/
 
 	/******************************************************************************************************************
 	 * getTargets() - returns the targets HashSet
@@ -521,5 +546,12 @@ public class Board extends JPanel {
 	public LinkedList<Integer> getAdjList(int index) {
 		return adjMatrix.get(index);
 	}
+	
+	public void setHumanTurn(boolean turn) {
+		this.humanTurn = turn;
+	}
 
+	public boolean isHumanTurn() {
+		return humanTurn;
+	}
 }

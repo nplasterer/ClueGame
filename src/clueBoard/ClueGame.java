@@ -459,13 +459,10 @@ public class ClueGame extends JFrame{
 	
 	public void humanTurn(int roll){
 		Graphics g = getGraphics();
-		Set<BoardCell> targets = new HashSet<BoardCell>();
 		board.calcTargets(human.getLocation().y, human.getLocation().x, roll);
-		targets = board.getTargets();
-		for(BoardCell b: targets){
-			b.drawTurn(g, board);
-		}
-		
+		board.setHumanTurn(true);
+		board.repaint();
+		//board.setHumanTurn(false);
 	}
 	
 	public static void main(String[] args) {
