@@ -9,7 +9,7 @@ public class Player {
 	private String name;
 	public static ArrayList<Card> seen = new ArrayList<Card>();
 	private ArrayList<Card> cards = new ArrayList<Card>();
-	private java.awt.Point location;
+	protected java.awt.Point location;
 	private java.awt.Color color;
 	private char lastVistedRoom;
 	protected char currentRoom;

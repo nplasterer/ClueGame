@@ -5,6 +5,7 @@ import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Random;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -14,6 +15,8 @@ import javax.swing.JTextField;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
 
+import clueBoard.ClueGame;
+import clueBoard.ComputerPlayer;
 import clueBoard.Player;
 
 public class ControlPanel {
@@ -22,10 +25,18 @@ public class ControlPanel {
 	JTextField tf1, tf2, tf3, tf4;
 	JButton b1, b2;
 	JFrame jf;
+	Random roll;
+	int rollnum =0;
+	private ClueGame games;
+	private ComputerPlayer comp;
 	
-	public ControlPanel(){
+	public ControlPanel(ClueGame game){
+		this.games = game;
+		this.comp = null;
 		jf = new JFrame();
 		jf.setSize(800, 300);
+		
+		roll = new Random();
 		
 		l1 = new JLabel("Whose turn?");
 		l2 = new JLabel("Roll");
@@ -40,8 +51,20 @@ public class ControlPanel {
 		b1 = new JButton("Next Player");
 		b1.addActionListener(new ActionListener(){ public void actionPerformed(ActionEvent e)
 		{
-			//add functionality
-			System.out.println("Button Pressed");
+			rollnum = roll.nextInt(6) + 1;
+			tf2.setText("" + rollnum);
+			if(games.getCurrentPlayer() == games.getHuman()){
+				games.humanTurn(rollnum);
+			}
+			else{
+				games.computerTurn(rollnum);
+				games.repaint();
+			}
+			
+			
+			
+			games.nextPlayer();
+			tf1.setText(games.getCurrentPlayer().getName());
 		}});
 		
 		b2 = new JButton("Make An Accusation");	
@@ -57,7 +80,7 @@ public class ControlPanel {
 		tf1.setText(player.getName());
 		tf1.setEditable(false);
 		
-		tf2.setText("5");
+		tf2.setText("" + rollnum);
 		tf2.setEditable(false);
 		
 		tf3.setText("Guess");

@@ -3,6 +3,7 @@ package clueBoard;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.FlowLayout;
+import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -12,9 +13,11 @@ import java.lang.reflect.Field;
 //Naomi and Brandon
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Random;
 import java.util.Scanner;
+import java.util.Set;
 
 import javax.swing.JButton;
 import javax.swing.JDialog;
@@ -39,6 +42,7 @@ public class ClueGame extends JFrame{
 	private HumanPlayer human;
 	private boolean turn;
 	private Player currentPlayer;
+	private int currentPlayerIndex = 0;
 	private String playerFile;
 	private String cardFile;
 	private JMenuBar menuBar;
@@ -301,7 +305,7 @@ public class ClueGame extends JFrame{
 	}
 
 	public void drawBoard(Board board){
-		control = new ControlPanel();
+		control = new ControlPanel(this);
 		mycards = new MyCards();
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setTitle("Clue Game");
@@ -431,6 +435,37 @@ public class ClueGame extends JFrame{
 			//Draw the Board
 			drawBoard(board);
 		}});
+	}
+	
+	public void nextPlayer(){
+		if(currentPlayer.equals(human))
+			currentPlayer = computer.get(0);
+		else {
+			if(currentPlayerIndex == computer.size() - 1) {
+				currentPlayer = human;
+				currentPlayerIndex = 0;
+			}
+			else {
+				currentPlayerIndex++;
+				currentPlayer = computer.get(currentPlayerIndex);
+			}
+		}
+	}
+	
+	public void computerTurn(int roll) {
+		board.calcTargets(computer.get(currentPlayerIndex).getLocation().y,computer.get(currentPlayerIndex).getLocation().x,roll);
+		computer.get(currentPlayerIndex).pickLocation(board.getTargets());
+	}
+	
+	public void humanTurn(int roll){
+		Graphics g = getGraphics();
+		Set<BoardCell> targets = new HashSet<BoardCell>();
+		board.calcTargets(human.getLocation().y, human.getLocation().x, roll);
+		targets = board.getTargets();
+		for(BoardCell b: targets){
+			b.drawTurn(g, board);
+		}
+		
 	}
 	
 	public static void main(String[] args) {

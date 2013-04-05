@@ -36,7 +36,6 @@ public class GameSetupTests {
 		//set up test game
 		game = new ClueGame();
 		game.loadConfigFiles();
-		game.selectAnswer();
 		game.deal();
 		
 		
@@ -70,7 +69,7 @@ public class GameSetupTests {
 		//test second computer
 		//set to computer 2 name, starting location and color
 		testComp = computers.get(1);
-		testLocation = new java.awt.Point(24,8);
+		testLocation = new java.awt.Point(19,0);
 		testColor = new java.awt.Color(255,255,255);
 		Assert.assertEquals("Mrs. White", testComp.getName());
 		if(testLocation.equals(testComp.getLocation()))
@@ -85,7 +84,7 @@ public class GameSetupTests {
 		//test fourth computer
 		//set to computer 4 name, starting location and color
 		testComp = computers.get(3);
-		testLocation = new java.awt.Point(17,24);
+		testLocation = new java.awt.Point(6,21);
 		testColor = new java.awt.Color(0,0,255);
 		Assert.assertEquals("Mrs. Peacock", testComp.getName());
 		if(testLocation.equals(testComp.getLocation()))

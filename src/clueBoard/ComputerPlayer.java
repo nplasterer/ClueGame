@@ -1,12 +1,13 @@
 package clueBoard;
 
+import java.awt.Point;
 import java.util.ArrayList;
 import java.util.Random;
 import java.util.Set;
 
 //Naomi and Brandon
 public class ComputerPlayer extends Player{
-	private char lastVistedRoom;
+	private char lastVistedRoom = 'X';
 	
 	public ComputerPlayer(String name, java.awt.Point location, java.awt.Color color) {
 		super(name, location, color);
@@ -45,8 +46,8 @@ public class ComputerPlayer extends Player{
 			int index = roller.nextInt(nonDoors.size());
 			targetCell = nonDoors.get(index);
 		}
-		//update current and last visited room
-		/*if(currentRoom != 'W') {
+		/*//update current and last visited room
+		if(currentRoom != 'W') {
 			lastVistedRoom = currentRoom;
 		}
 		
@@ -57,6 +58,8 @@ public class ComputerPlayer extends Player{
 			RoomCell doorway = (RoomCell) targetCell;
 			currentRoom = doorway.getRoomInitial();
 		}*/
+		
+		location = new Point(targetCell.getCellColumn(),targetCell.getCellRow());
 		return targetCell;
 	}
 	

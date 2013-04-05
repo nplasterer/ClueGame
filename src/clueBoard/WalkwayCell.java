@@ -21,4 +21,6 @@ public class WalkwayCell extends BoardCell {
 		g.setColor(Color.BLACK);
 		g.drawRect(getCellColumn()*25, getCellRow()*25, 25, 25);
 	}
+	
+
 }

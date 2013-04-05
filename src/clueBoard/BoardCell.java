@@ -1,5 +1,6 @@
 package clueBoard;
 
+import java.awt.Color;
 import java.awt.Graphics;
 
 public abstract class BoardCell {
@@ -51,4 +52,10 @@ public abstract class BoardCell {
 	
 	
 	abstract void draw(Graphics g, Board board);
+
+	public void drawTurn(Graphics g, Board board){
+		g.setColor(Color.PINK);
+		g.fillRect(getCellColumn()*25, getCellRow()*25, 25, 25);
+	}
+
 }
