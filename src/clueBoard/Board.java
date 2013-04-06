@@ -2,7 +2,10 @@ package clueBoard;
 
 import java.awt.Graphics;
 import java.awt.GridLayout;
+import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.util.ArrayList;
@@ -11,6 +14,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Scanner;
+import java.util.Set;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -19,7 +23,7 @@ import clueBoard.RoomCell.DoorDirection;
 
 public class Board extends JPanel {
 
-	
+
 	private ArrayList<BoardCell> cells;
 	private Map<Character, String> rooms;
 	private int numRows;
@@ -33,14 +37,15 @@ public class Board extends JPanel {
 	private ArrayList<Boolean> visited;
 	private ArrayList<Player> players;
 	private boolean humanTurn;
+	private BoardCell clickedCell;
 
-	
 	/******************************************************************************************************************
 	 * Board() 	- default constructor. Initializes:
 	 * 				cells, rooms, boardFile, legendFile, grid, targets, adjMatrix, visited, and doorIndeces
 	 * 			- boardFile and legendFile are hard-coded for inilization
 	 *****************************************************************************************************************/
 	public Board() {
+		clickedCell = null;
 		cells = new ArrayList<BoardCell>();
 		rooms = new HashMap<Character, String>();
 		boardFile = "ClueLayout.csv";
@@ -50,9 +55,9 @@ public class Board extends JPanel {
 		adjMatrix = new HashMap<Integer, LinkedList<Integer>>();
 		visited = new ArrayList<Boolean>();
 		players = null;
-		humanTurn = false;
+		addMouseListener(new BoardListener());
 	}
-	
+
 	public Board(ArrayList<Player> player) {
 		cells = new ArrayList<BoardCell>();
 		rooms = new HashMap<Character, String>();
@@ -63,6 +68,7 @@ public class Board extends JPanel {
 		adjMatrix = new HashMap<Integer, LinkedList<Integer>>();
 		visited = new ArrayList<Boolean>();
 		players = player;
+		addMouseListener(new BoardListener());
 	}
 
 	/******************************************************************************************************************
@@ -82,7 +88,7 @@ public class Board extends JPanel {
 		visited = new ArrayList<Boolean>();
 	}
 
-	
+
 	/******************************************************************************************************************
 	 * loadConfigFiles() 	- calls loadBoardConfigFile() and loadLegendConfigFile()
 	 * 						- catches FileNotFoundException, BadConfigFormatException
@@ -96,9 +102,10 @@ public class Board extends JPanel {
 		} catch (BadConfigFormatException e) {
 			System.out.println(e.getMessage());
 		}
+		calcAdjacencies();
 	}
 
-	
+
 	/******************************************************************************************************************
 	 * loadBoardConfigFile() 	- counts the number of rows and columns, storing the values into numRows and numColumns\
 	 * 							- populates cells ArrayList with Rooms or Walkways depending upon file contents
@@ -143,7 +150,7 @@ public class Board extends JPanel {
 
 		BoardCell tempCell;
 		int indexCount = 0;
-		
+
 		//While the file has another line, read in the line and split the line via commas, then add the appropriate type of
 		//BoardCell depending on it's first character
 		while (reader.hasNextLine()) {
@@ -153,10 +160,10 @@ public class Board extends JPanel {
 				if (fileLineSplit[i].charAt(0) == 'W') {
 					tempCell = new WalkwayCell();
 					tempCell.setIndex(indexCount);
-					
+
 					tempCell.setCellRow(indexCount/numColumns);
 					tempCell.setCellColumn(indexCount%numColumns);
-					
+
 					cells.add(tempCell);
 				} else if (fileLineSplit[i].charAt(0) == 'C' || fileLineSplit[i].charAt(0) == 'K' || 
 						fileLineSplit[i].charAt(0) == 'B' || fileLineSplit[i].charAt(0) == 'R' ||
@@ -165,19 +172,19 @@ public class Board extends JPanel {
 						fileLineSplit[i].charAt(0) =='H' || fileLineSplit[i].charAt(0) == 'X') {
 					tempCell = new RoomCell(fileLineSplit[i]);
 					tempCell.setIndex(indexCount);
-					
+
 					tempCell.setCellRow(indexCount/numColumns);
 					tempCell.setCellColumn(indexCount%numColumns);
-					
+
 					cells.add(tempCell);
 				} else {
 					throw new BadConfigFormatException("Board contains cell with invalid initial.");
 				}
 				indexCount++;
 			}
-			
+
 		}
-		
+
 		//Checks each door on the board and makes sure it is not in a roow, otherwise it throws an exception
 		for (int i = 0; i < cells.size(); i++) {
 			if (cells.get(i).isDoorway() == true) {
@@ -187,7 +194,7 @@ public class Board extends JPanel {
 				}
 			}
 		}
-		
+
 		//Populates the the visited list to be false for all cells
 		for (int i = 0; i < numRows * numColumns; i++) {
 			visited.add(false);
@@ -199,25 +206,25 @@ public class Board extends JPanel {
 	 * 							- reads in the room initials and names and stores them into the rooms map
 	 *****************************************************************************************************************/
 	public void loadLegendConfigFile() throws FileNotFoundException, BadConfigFormatException {
-		
+
 		//Declare FileReader, Scanner, and local variables
 		inputFileReader = new FileReader(legendFile);
 		reader = new Scanner(inputFileReader);
 		String entry;
 		int numEntries = 0, currentRow = 0;
-		
+
 		//count the number of lines
 		while (reader.hasNextLine()) {			
 			numEntries++;
 			reader.nextLine();
 		}
-		
+
 		//Declare new FileReader with same file in order to reaccess the file
 		FileReader inputFileReader2 = new FileReader(legendFile);
 		reader = new Scanner(inputFileReader2);
-		
+
 		String[] entries = new String[numEntries];
-	
+
 		//While the file has another line, read in the line and split it via commas. If there are 2 tokens in the line,
 		//the two tokens are put into the room HashMap with the first token as its key and the second token as its value
 		while (reader.hasNextLine()) {
@@ -230,9 +237,9 @@ public class Board extends JPanel {
 				throw new BadConfigFormatException("Row " + currentRow + " of legend file does not contain exactly two items.");
 			}
 		}
-		
+
 		reader.close();
-		
+
 	}
 
 	/******************************************************************************************************************
@@ -249,42 +256,42 @@ public class Board extends JPanel {
 	public RoomCell getRoomCellAt(int row, int column) {
 		int i = calcIndex(row, column);
 		RoomCell cell;
-		
+
 		//if the cell at (row, column) is not a walkway, return the cell
 		if (!cells.get(i).isWalkway()) {
 			cell = (RoomCell) cells.get(i);
 			return cell;
 		} 
-		
+
 		//else return null
 		return null;
 	}
 
-	
+
 	/******************************************************************************************************************
 	 * getRoomCellAt(int index)	- returns the RoomCell located at the given index
 	 * 							- if the given cell location is a walkway, returns null
 	 *****************************************************************************************************************/
 	public RoomCell getRoomCellAt(int index) {
 		RoomCell cell;
-		
+
 		//if the cell at index is not a walkway, return the cell
 		if (!cells.get(index).isWalkway()) {
 			cell = (RoomCell) cells.get(index);
 			return cell;
 		} 
-		
+
 		//else return null
 		return null;
 	}
-	
+
 	/******************************************************************************************************************
 	 * getCellAt(int index) - returns the BoardCell located at the given index
 	 *****************************************************************************************************************/
 	public BoardCell getCellAt(int index) {
 		return cells.get(index);
 	}
-	
+
 	/******************************************************************************************************************
 	 * getCells() - returns the cells ArrayList of BoardCells
 	 *****************************************************************************************************************/
@@ -312,7 +319,7 @@ public class Board extends JPanel {
 	public int getNumColumns() {
 		return numColumns;
 	}
-	
+
 	/******************************************************************************************************************
 	 * calcAdjacencies()	- populates the adjMatrix Map of Integers and associated LinkedList<Integer>s
 	 * 						- calculates the adjacent cells of each cell on the board
@@ -323,40 +330,40 @@ public class Board extends JPanel {
 		//for each index on the board
 		for (int index = 0; index < numColumns * numRows; index++) {
 			adjIndexList = new LinkedList<Integer>();
-			
+
 			//Left Adjacent Check
 			//if the cell is not on the left edge
 			if (!(index % numColumns == 0)) {
-				
+
 				//if the cell is a Doorway
 				if (cells.get(index).isDoorway()) {
-					
+
 					//and the doorway faces LEFT
 					if (getRoomCellAt(index).getDoorDirection() == DoorDirection.LEFT) {
-						
+
 						//and the cell to the left is not a Room, add it to the adjacency list
 						if (cells.get(index-1).isRoom() == false) {
 							adjIndexList.add(index - 1);
 						}
 					} 
 				}
-				
+
 				//else if the cell is not a doorway, then if the left adjacent cell is a walkway or not a room, or the left
 				//adjacent cell is a doorway and it's direction is right, add the left adjacent cell to the adjacency list
 				else if((cells.get(index - 1).isWalkway() && !cells.get(index).isRoom()) || 
-							(cells.get(index - 1).isDoorway() && 
-									getRoomCellAt(index - 1).getDoorDirection() == DoorDirection.RIGHT)) {
-						adjIndexList.add(index - 1);
-					}
+						(cells.get(index - 1).isDoorway() && 
+								getRoomCellAt(index - 1).getDoorDirection() == DoorDirection.RIGHT)) {
+					adjIndexList.add(index - 1);
+				}
 			} 
-			
+
 			//Above Adjacent Check
 			//if the cell is not on the top edge
 			if (!(index >= 0 && index <= numColumns - 1)) {
-				
+
 				//if the cell is a doorway
 				if (cells.get(index).isDoorway()) {
-					
+
 					//then if the door's direction is up and the bottom adjacent cell is not a room, add the above adjacent cell
 					//to the adjacency list
 					if (getRoomCellAt(index).getDoorDirection() == DoorDirection.UP) {
@@ -365,52 +372,52 @@ public class Board extends JPanel {
 						}
 					}
 				}
-				
+
 				//else if the cell is not a doorway, then if the above adjacent cell is a walkway or not a room, or the
 				//above adjacent cell is a doorway and it's direction is down, add the above adjacent cell to the adjacency list
 				else if((cells.get(index - numColumns).isWalkway() && !cells.get(index).isRoom()) || 
-							(cells.get(index - numColumns).isDoorway() &&
+						(cells.get(index - numColumns).isDoorway() &&
 								getRoomCellAt(index - numColumns).getDoorDirection() == DoorDirection.DOWN)) {
-						adjIndexList.add(index - numColumns);
-					}
+					adjIndexList.add(index - numColumns);
+				}
 			}
-			
+
 			//Below Adjacent
 			//if the cell is not on the bottom edge
 			if (!(index >= numColumns * (numRows - 1) && index <= (numColumns * numRows) - 1)) {
-				
+
 				//if the cell is a doorway
 				if (cells.get(index).isDoorway()) {
-					
+
 					//and the door's direction is down
 					if (getRoomCellAt(index).getDoorDirection() == DoorDirection.DOWN) {
-						
+
 						//and the below adjacent cell is not a room, add the below adacent cell to the adjacency list
 						if (cells.get(index + numColumns).isRoom() == false) {
 							adjIndexList.add(index + numColumns);
 						}
 					}
 				}
-				
+
 				//else if the cell is not a doorway, then if the below adjacent cell is a walkway or not a room, or the
 				//below adjacent cell is a doorway and it's direction up, add the below adjacent cell to the adjacency list
 				else if((cells.get(index + numColumns).isWalkway() && !cells.get(index).isRoom()) || 
-							(cells.get(index + numColumns).isDoorway() && 
-									getRoomCellAt(index + numColumns).getDoorDirection() == DoorDirection.UP)) {
-						adjIndexList.add(index + numColumns);
-					}
+						(cells.get(index + numColumns).isDoorway() && 
+								getRoomCellAt(index + numColumns).getDoorDirection() == DoorDirection.UP)) {
+					adjIndexList.add(index + numColumns);
+				}
 			}
-			
+
 			//Right Adjacent
 			//if the cell is not on the right edge
 			if (!(index % numColumns == numColumns - 1)) {
-				
+
 				//if the cell is a doorway
 				if (cells.get(index).isDoorway()) {
-					
+
 					//and the door's direction is right
 					if (getRoomCellAt(index).getDoorDirection() == DoorDirection.RIGHT) {
-						
+
 						//and the right adjacent cell is not a room, add the right adjacent cell to the adjacency list
 						if (cells.get(index + 1).isRoom() == false) {
 							adjIndexList.add(index + 1);
@@ -420,67 +427,68 @@ public class Board extends JPanel {
 				//else if the cell is not a doorway, then if the right adjacent cell is a walkway or not a room, or the
 				//right adjacent cell is a doorway and it's direction left, add the right adjacent cell to the adjacency list
 				else if((cells.get(index + 1).isWalkway() && !cells.get(index).isRoom()) || 
-							(cells.get(index + 1).isDoorway() && 
-									getRoomCellAt(index + 1).getDoorDirection() == DoorDirection.LEFT)) {
-						adjIndexList.add(index + 1);
-					}
+						(cells.get(index + 1).isDoorway() && 
+								getRoomCellAt(index + 1).getDoorDirection() == DoorDirection.LEFT)) {
+					adjIndexList.add(index + 1);
+				}
 			}
-			
+
 			//Store the local adjacency list into the adjacencies Map at the correct index
 			adjMatrix.put(index, adjIndexList);
-		
+
 		}
 	}
-	
+
 	/******************************************************************************************************************
 	 * calcTargets() 	- sets up variables and data for the recursive call to calcTargetsRec()
 	 *****************************************************************************************************************/
 	public void calcTargets(int row, int column, int steps) {
-		targets = new HashSet<BoardCell>();
+		for(Boolean b : visited)
+			b = false;
+		targets.clear();
 		int index = calcIndex(row, column);
 		visited.set(index, true);
-		calcAdjacencies();
 		calcTargetsRec(row, column, steps);
 	}
-		
+
 	/******************************************************************************************************************
 	 * calcTargetsRec() 	- Through recursion, calculates the target cells available based on the number of steps
 	 * 							 and the row and column of the starting cell on the board.
 	 *****************************************************************************************************************/
 	public void calcTargetsRec(int row, int column, int step) {
 		LinkedList<Integer> adjCells = adjMatrix.get(calcIndex(row,column));
-		
+
 		//sets the current cell to visited
 		visited.set(calcIndex(row,column), true);
-		
+
 		//for each adjacent cell
 		for (Integer i : adjCells) {
-			
+
 			//if the cell has not been visited
 			if (visited.get(i) == false) {
-				
+
 				//set the cell to visited
 				visited.set(i, true);
-				
+
 				//if max number of steps have been taken, add the cell to list of targets
 				if (step == 1) {
 					targets.add(cells.get(i));
-					
-				//else if the cell is a doorway, add the doorway to the list of targets	
+
+					//else if the cell is a doorway, add the doorway to the list of targets	
 				} else if (getCellAt(i).isDoorway()) {
 					targets.add(cells.get(i));
-					
-				//else if there are still steps to be taken, calculate targets of the current adjacent cell with one less step	
+
+					//else if there are still steps to be taken, calculate targets of the current adjacent cell with one less step	
 				} else {
 					calcTargetsRec(getRow(i), getColumn(i), step - 1);
 				}
-				
+
 				//sets the current adjacent cell back to false after targets have been calculated
 				visited.set(i, false);
 			}
 		}
 	}
-	
+
 	@Override
 	public void paintComponent(Graphics g){
 		super.paintComponent(g);
@@ -488,65 +496,48 @@ public class Board extends JPanel {
 		for(BoardCell c: cells){
 			c.draw(g, this);
 		}
-		
+
 		if(players!=null){
 			for(Player p: players){
 				p.draw(g);
 			}
 		}
-		
+
 		if(humanTurn) {
 			for(BoardCell c: targets) {
 				c.drawTurn(g, this);
 			}
 		}
 	}
-	
-	/*public void drawHumanTiles(Graphics g) {
-		super.paintComponent(g);
-		setLayout(new GridLayout(24, 24));
-		for(BoardCell c: cells){
-			c.draw(g, this);
-		}
-		
-		if(players!=null){
-			for(Player p: players){
-				p.draw(g);
-			}
-		}
-		
-		for(BoardCell c: targets)
-			c.drawTurn(g, this);
-	}*/
 
 	/******************************************************************************************************************
 	 * getTargets() - returns the targets HashSet
 	 *****************************************************************************************************************/
-	public HashSet getTargets() {
+	public HashSet<BoardCell> getTargets() {
 		return targets;
 	}
-	
+
 	/******************************************************************************************************************
 	 * getRow() - calculates the row of the cell given the index
 	 *****************************************************************************************************************/
 	public int getRow(int index) {
 		return index / numColumns;
 	}
-	
+
 	/******************************************************************************************************************
 	 * getColumn() - calculates the column of the cell given the index
 	 *****************************************************************************************************************/
 	public int getColumn(int index) {
 		return index % numColumns;
 	}
-	
+
 	/******************************************************************************************************************
 	 * getAdjList(int index) - returns a list of cells adjacent to the cell located at the given index 
 	 *****************************************************************************************************************/
 	public LinkedList<Integer> getAdjList(int index) {
 		return adjMatrix.get(index);
 	}
-	
+
 	public void setHumanTurn(boolean turn) {
 		this.humanTurn = turn;
 	}
@@ -554,4 +545,42 @@ public class Board extends JPanel {
 	public boolean isHumanTurn() {
 		return humanTurn;
 	}
+
+	public void checkClick(int x, int y){
+		
+		if(humanTurn) {
+			this.clickedCell = null;
+			for(BoardCell b : targets){
+				Rectangle rect = new Rectangle(b.getCellColumn()*25, b.getCellRow()*25, 25,25);
+				if(rect.contains(new Point(x,y))){
+					this.clickedCell = b;
+					this.humanTurn = false;
+					return;
+				}
+			}
+			System.out.println("Invalid cell selected");
+		}
+	}
+
+	public BoardCell getClickedCell() {
+		return clickedCell;
+	}
+	
+	public void setClickedCell(BoardCell cell) {
+		this.clickedCell = cell;
+	}
+
+	private class BoardListener implements MouseListener {
+
+		public void mouseClicked(MouseEvent e) {
+			checkClick(getX(), getY());
+			repaint();
+		}
+
+		public void mouseEntered(MouseEvent e) {}
+		public void mouseExited(MouseEvent e) {}
+		public void mousePressed(MouseEvent e) {}
+		public void mouseReleased(MouseEvent event) {}
+	}
+
 }

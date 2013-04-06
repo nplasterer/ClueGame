@@ -6,12 +6,12 @@ import java.util.ArrayList;
 import java.util.Random;
 
 public class Player {
-	private String name;
+	protected String name;
 	public static ArrayList<Card> seen = new ArrayList<Card>();
-	private ArrayList<Card> cards = new ArrayList<Card>();
+	protected ArrayList<Card> cards = new ArrayList<Card>();
 	protected java.awt.Point location;
-	private java.awt.Color color;
-	private char lastVistedRoom;
+	protected java.awt.Color color;
+	protected char lastVistedRoom;
 	protected char currentRoom;
 	
 	public Player() {

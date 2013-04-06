@@ -49,7 +49,10 @@ public abstract class BoardCell {
 		this.cellColumn = cellColumn;
 	}
 	
-	
+	@Override
+	public String toString() {
+		return ("" + index);
+	}
 	
 	abstract void draw(Graphics g, Board board);
 

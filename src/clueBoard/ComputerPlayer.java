@@ -7,7 +7,7 @@ import java.util.Set;
 
 //Naomi and Brandon
 public class ComputerPlayer extends Player{
-	private char lastVistedRoom = 'X';
+	private char lastVisitedRoom = 'X';
 	
 	public ComputerPlayer(String name, java.awt.Point location, java.awt.Color color) {
 		super(name, location, color);
@@ -31,11 +31,21 @@ public class ComputerPlayer extends Player{
 				nonDoors.add(b);
 		}
 		
+		System.out.println(name);
+		System.out.println("Doors");
+		for(BoardCell b : doors)
+			System.out.println(b);
+		System.out.println("Walkway Cells");
+		for(BoardCell b : nonDoors)
+			System.out.println(b);
+		System.out.println("");
+		
 		while(doors.size() > 0) {
 			int index = roller.nextInt(doors.size());
 			targetCell = doors.get(index);
 			RoomCell cell = (RoomCell) targetCell;
-			if(cell.getRoomInitial() != lastVistedRoom) {
+			if(cell.getRoomInitial() != lastVisitedRoom) {
+				this.lastVisitedRoom = cell.getRoomInitial();
 				return targetCell;
 			}
 			else 
@@ -58,8 +68,6 @@ public class ComputerPlayer extends Player{
 			RoomCell doorway = (RoomCell) targetCell;
 			currentRoom = doorway.getRoomInitial();
 		}*/
-		
-		location = new Point(targetCell.getCellColumn(),targetCell.getCellRow());
 		return targetCell;
 	}
 	
@@ -133,10 +141,10 @@ public class ComputerPlayer extends Player{
 	}
 
 	public char getLastVistedRoom() {
-		return lastVistedRoom;
+		return lastVisitedRoom;
 	}
 
 	public void setLastVistedRoom(char lastVistedRoom) {
-		this.lastVistedRoom = lastVistedRoom;
+		this.lastVisitedRoom = lastVistedRoom;
 	}
 }

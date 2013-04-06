@@ -7,6 +7,9 @@ import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.lang.reflect.Field;
@@ -27,6 +30,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 
 import clueBoard.Card.cardType;
 
@@ -50,6 +54,7 @@ public class ClueGame extends JFrame{
 	private ControlPanel control;
 	private MyCards mycards;
 	private Board board;
+	public boolean turndone;
 
 	public ClueGame() {
 		computer = new ArrayList<ComputerPlayer>();
@@ -453,8 +458,11 @@ public class ClueGame extends JFrame{
 	}
 	
 	public void computerTurn(int roll) {
+		System.out.println(computer.get(currentPlayerIndex).getName());
+		System.out.println("" + computer.get(currentPlayerIndex).getLocation().y + " " + computer.get(currentPlayerIndex).getLocation().x + " " + roll);
 		board.calcTargets(computer.get(currentPlayerIndex).getLocation().y,computer.get(currentPlayerIndex).getLocation().x,roll);
-		computer.get(currentPlayerIndex).pickLocation(board.getTargets());
+		BoardCell chosenCell = computer.get(currentPlayerIndex).pickLocation(board.getTargets());
+		computer.get(currentPlayerIndex).setLocation(new Point(chosenCell.getCellColumn(),chosenCell.getCellRow()));
 	}
 	
 	public void humanTurn(int roll){
@@ -462,9 +470,14 @@ public class ClueGame extends JFrame{
 		board.calcTargets(human.getLocation().y, human.getLocation().x, roll);
 		board.setHumanTurn(true);
 		board.repaint();
-		//board.setHumanTurn(false);
+		
+		/*while(board.isHumanTurn()) {}
+		BoardCell newCell = board.getClickedCell();
+		human.setLocation(new Point(newCell.getCellColumn(),newCell.getCellRow()));
+		board.repaint();*/
+		board.setHumanTurn(false);
 	}
-	
+
 	public static void main(String[] args) {
 		ClueGame clue = new ClueGame();
 		/*ArrayList<Player> players = new ArrayList<Player>();
@@ -477,5 +490,8 @@ public class ClueGame extends JFrame{
 		
 		clue.drawBoard(board);*/
 		clue.splashScreen();
+		/*clue.board.calcTargets(19, 7, 6);
+		for(BoardCell b : clue.board.getTargets())
+			System.out.println(b);*/
 	}
 }
