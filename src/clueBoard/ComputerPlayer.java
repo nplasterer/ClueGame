@@ -39,6 +39,7 @@ public class ComputerPlayer extends Player{
 		for(BoardCell b : nonDoors)
 			System.out.println(b);
 		System.out.println("");
+		System.out.println("**END PLAYER DATA**");
 		
 		while(doors.size() > 0) {
 			int index = roller.nextInt(doors.size());

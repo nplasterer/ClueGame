@@ -17,6 +17,7 @@ import java.util.Scanner;
 import java.util.Set;
 
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 import clueBoard.RoomCell.DoorDirection;
@@ -37,7 +38,7 @@ public class Board extends JPanel {
 	private ArrayList<Boolean> visited;
 	private ArrayList<Player> players;
 	private boolean humanTurn;
-	private BoardCell clickedCell;
+	private HumanPlayer human;
 
 	/******************************************************************************************************************
 	 * Board() 	- default constructor. Initializes:
@@ -45,7 +46,7 @@ public class Board extends JPanel {
 	 * 			- boardFile and legendFile are hard-coded for inilization
 	 *****************************************************************************************************************/
 	public Board() {
-		clickedCell = null;
+		human = null;
 		cells = new ArrayList<BoardCell>();
 		rooms = new HashMap<Character, String>();
 		boardFile = "ClueLayout.csv";
@@ -449,6 +450,9 @@ public class Board extends JPanel {
 		int index = calcIndex(row, column);
 		visited.set(index, true);
 		calcTargetsRec(row, column, steps);
+		if(targets.size() == 0) {
+			System.out.println("**NO TARGETS FOUND**");
+		}
 	}
 
 	/******************************************************************************************************************
@@ -456,16 +460,23 @@ public class Board extends JPanel {
 	 * 							 and the row and column of the starting cell on the board.
 	 *****************************************************************************************************************/
 	public void calcTargetsRec(int row, int column, int step) {
-		LinkedList<Integer> adjCells = adjMatrix.get(calcIndex(row,column));
+		calcAdjacencies();
+		//LinkedList<Integer> adjCells = adjMatrix.get(calcIndex(row,column));
+		LinkedList<Integer> adjCells = new LinkedList<Integer>();
+		for (int i = 0; i < getAdjList(calcIndex(row,column)).size(); i++)
+			adjCells.add(getAdjList(calcIndex(row,column)).get(i));
+		/*for(Integer i : adjCells)
+			System.out.print("" + i + " ");
+		System.out.println("");*/
 
 		//sets the current cell to visited
-		visited.set(calcIndex(row,column), true);
+		//visited.set(calcIndex(row,column), true);
 
 		//for each adjacent cell
 		for (Integer i : adjCells) {
 
 			//if the cell has not been visited
-			if (visited.get(i) == false) {
+			if (!visited.get(i)) {
 
 				//set the cell to visited
 				visited.set(i, true);
@@ -546,34 +557,34 @@ public class Board extends JPanel {
 		return humanTurn;
 	}
 
+	public HumanPlayer getHuman() {
+		return human;
+	}
+
+	public void setHuman(HumanPlayer human) {
+		this.human = human;
+	}
+
 	public void checkClick(int x, int y){
 		
 		if(humanTurn) {
-			this.clickedCell = null;
 			for(BoardCell b : targets){
 				Rectangle rect = new Rectangle(b.getCellColumn()*25, b.getCellRow()*25, 25,25);
 				if(rect.contains(new Point(x,y))){
-					this.clickedCell = b;
+					human.setLocation(new Point(b.getCellColumn(),b.getCellRow()));
+					repaint();
 					this.humanTurn = false;
 					return;
 				}
 			}
-			System.out.println("Invalid cell selected");
+			JOptionPane.showMessageDialog(this, "Invalid cell selected", "Error",JOptionPane.ERROR_MESSAGE);
 		}
-	}
-
-	public BoardCell getClickedCell() {
-		return clickedCell;
-	}
-	
-	public void setClickedCell(BoardCell cell) {
-		this.clickedCell = cell;
 	}
 
 	private class BoardListener implements MouseListener {
 
 		public void mouseClicked(MouseEvent e) {
-			checkClick(getX(), getY());
+			checkClick(e.getX(), e.getY());
 			repaint();
 		}
 

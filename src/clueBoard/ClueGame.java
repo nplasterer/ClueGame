@@ -54,7 +54,6 @@ public class ClueGame extends JFrame{
 	private ControlPanel control;
 	private MyCards mycards;
 	private Board board;
-	public boolean turndone;
 
 	public ClueGame() {
 		computer = new ArrayList<ComputerPlayer>();
@@ -409,6 +408,10 @@ public class ClueGame extends JFrame{
 		this.cardFile = cardFile;
 	}
 	
+	public Board getBoard() {
+		return this.board;
+	}
+	
 	public void splashScreen(){
 		//Do game setup
 		ArrayList<Player> players = new ArrayList<Player>();
@@ -458,8 +461,15 @@ public class ClueGame extends JFrame{
 	}
 	
 	public void computerTurn(int roll) {
-		System.out.println(computer.get(currentPlayerIndex).getName());
 		System.out.println("" + computer.get(currentPlayerIndex).getLocation().y + " " + computer.get(currentPlayerIndex).getLocation().x + " " + roll);
+		
+		System.out.println("**TEST**");
+		board.calcTargets(14, 4, 1);
+		for(BoardCell b : board.getTargets())
+			System.out.print(b + " ");
+		System.out.println("");
+		System.out.println("**END TEST**");
+		
 		board.calcTargets(computer.get(currentPlayerIndex).getLocation().y,computer.get(currentPlayerIndex).getLocation().x,roll);
 		BoardCell chosenCell = computer.get(currentPlayerIndex).pickLocation(board.getTargets());
 		computer.get(currentPlayerIndex).setLocation(new Point(chosenCell.getCellColumn(),chosenCell.getCellRow()));
@@ -469,13 +479,8 @@ public class ClueGame extends JFrame{
 		Graphics g = getGraphics();
 		board.calcTargets(human.getLocation().y, human.getLocation().x, roll);
 		board.setHumanTurn(true);
+		board.setHuman(human);
 		board.repaint();
-		
-		/*while(board.isHumanTurn()) {}
-		BoardCell newCell = board.getClickedCell();
-		human.setLocation(new Point(newCell.getCellColumn(),newCell.getCellRow()));
-		board.repaint();*/
-		board.setHumanTurn(false);
 	}
 
 	public static void main(String[] args) {
@@ -490,7 +495,7 @@ public class ClueGame extends JFrame{
 		
 		clue.drawBoard(board);*/
 		clue.splashScreen();
-		/*clue.board.calcTargets(19, 7, 6);
+		/*clue.board.calcTargets(14, 4, 1);
 		for(BoardCell b : clue.board.getTargets())
 			System.out.println(b);*/
 	}

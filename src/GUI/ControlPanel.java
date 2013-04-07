@@ -29,44 +29,47 @@ public class ControlPanel {
 	int rollnum =0;
 	private ClueGame games;
 	private ComputerPlayer comp;
-	
+
 	public ControlPanel(ClueGame game){
 		this.games = game;
 		this.comp = null;
 		jf = new JFrame();
 		jf.setSize(800, 300);
-		
+
 		roll = new Random();
-		
+
 		l1 = new JLabel("Whose turn?");
 		l2 = new JLabel("Roll");
 		l3 = new JLabel("Guess");
 		l4 = new JLabel("Response");
-		
+
 		tf1 = new JTextField(20);
 		tf2 = new JTextField(2);
 		tf3 = new JTextField(20);
 		tf4 = new JTextField(20);
-		
+
 		b1 = new JButton("Next Player");
 		b1.addActionListener(new ActionListener(){ public void actionPerformed(ActionEvent e)
 		{
 			rollnum = roll.nextInt(6) + 1;
 			tf2.setText("" + rollnum);
-			if(games.getCurrentPlayer() == games.getHuman()){
-				games.humanTurn(rollnum);
+			if(!games.getBoard().isHumanTurn()) {
+				if(games.getCurrentPlayer() == games.getHuman()){
+					games.humanTurn(rollnum);
+				}
+				else{
+					games.computerTurn(rollnum);
+					games.repaint();
+				}
+
+
+
+				games.nextPlayer();
+				tf1.setText(games.getCurrentPlayer().getName());
 			}
-			else{
-				games.computerTurn(rollnum);
-				games.repaint();
-			}
-			
-			
-			
-			games.nextPlayer();
-			tf1.setText(games.getCurrentPlayer().getName());
-		}});
-		
+		}
+		});
+
 		b2 = new JButton("Make An Accusation");	
 		b2.addActionListener(new ActionListener(){ public void actionPerformed(ActionEvent e)
 		{
@@ -74,18 +77,18 @@ public class ControlPanel {
 			System.out.println("Button Pressed");
 		}});
 	}
-	
+
 	public Container setup(Player player){
 		//add correct name of the player correct roll and correct guess etc..
 		tf1.setText(player.getName());
 		tf1.setEditable(false);
-		
+
 		tf2.setText("" + rollnum);
 		tf2.setEditable(false);
-		
+
 		tf3.setText("Guess");
 		tf3.setEditable(false);
-		
+
 		tf4.setText("Response");
 		tf4.setEditable(false);
 
@@ -119,9 +122,9 @@ public class ControlPanel {
 		pane.add(die);
 		pane.add(guess);
 		pane.add(response);
-		
+
 		return pane;
-		
+
 	}
-	
+
 }
