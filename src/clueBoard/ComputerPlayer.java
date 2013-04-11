@@ -8,6 +8,8 @@ import java.util.Set;
 //Naomi and Brandon
 public class ComputerPlayer extends Player{
 	private char lastVisitedRoom = 'X';
+	private boolean accusationReady = false;
+	private Solution lastSuggestion = null;
 	
 	public ComputerPlayer(String name, java.awt.Point location, java.awt.Color color) {
 		super(name, location, color);
@@ -30,16 +32,6 @@ public class ComputerPlayer extends Player{
 			else
 				nonDoors.add(b);
 		}
-		
-		System.out.println(name);
-		System.out.println("Doors");
-		for(BoardCell b : doors)
-			System.out.println(b);
-		System.out.println("Walkway Cells");
-		for(BoardCell b : nonDoors)
-			System.out.println(b);
-		System.out.println("");
-		System.out.println("**END PLAYER DATA**");
 		
 		while(doors.size() > 0) {
 			int index = roller.nextInt(doors.size());
@@ -79,7 +71,7 @@ public class ComputerPlayer extends Player{
 		ArrayList<Card> notSeenWeapons = new ArrayList<Card>();
 		
 		//set notSeen
-		for(Card c : ClueGame.getFullDeck()) {
+		for(Card c : this.deck) {
 			if(!seen.contains(c))
 				notSeen.add(c);
 		}
@@ -100,41 +92,8 @@ public class ComputerPlayer extends Player{
 		String weapon = notSeenWeapons.get(index).getCard();
 		
 		//set Room
-		String room;
-		switch(this.currentRoom) {
-		case 'C' :
-			room = "Conservatory";
-			break;
-		case 'K' :
-			room = "Kitchen";
-			break;
-		case 'B' :
-			room = "Ballroom";
-			break;
-		case 'R' :
-			room = "Billiard Room";
-			break;
-		case 'L' :
-			room = "Library";
-			break;
-		case 's' :
-			room = "Study";
-			break;
-		case 'D' :
-			room = "Dining Room";
-			break;
-		case 'O' :
-			room = "Lounge";
-			break;
-		case 'H' :
-			room = "Hall";
-			break;
-		default :
-			room = null;
-		}
-		
-		Solution guess = new Solution(person, weapon, room);
-		return guess;
+		lastSuggestion = new Solution(person, weapon, currentRoom);
+		return this.lastSuggestion;
 	}
 	
 	public void updateSeen(Card seen){
@@ -147,5 +106,21 @@ public class ComputerPlayer extends Player{
 
 	public void setLastVistedRoom(char lastVistedRoom) {
 		this.lastVisitedRoom = lastVistedRoom;
+	}
+
+	public Solution getLastSuggestion() {
+		return lastSuggestion;
+	}
+
+	public void setLastSuggestion(Solution lastSuggestion) {
+		this.lastSuggestion = lastSuggestion;
+	}
+
+	public boolean isAccusationReady() {
+		return accusationReady;
+	}
+
+	public void setAccusationReady(boolean accusationReady) {
+		this.accusationReady = accusationReady;
 	}
 }

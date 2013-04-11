@@ -3,6 +3,7 @@ package GUI;
 import java.awt.Container;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
+import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Random;
@@ -10,18 +11,22 @@ import java.util.Random;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
 
+import clueBoard.Board;
+import clueBoard.Card;
 import clueBoard.ClueGame;
 import clueBoard.ComputerPlayer;
 import clueBoard.Player;
+import clueBoard.Solution;
 
 public class ControlPanel {
 
-	JLabel l1, l2, l3, l4;
+	JLabel l1, l2, l3, l4, guessValue;
 	JTextField tf1, tf2, tf3, tf4;
 	JButton b1, b2;
 	JFrame jf;
@@ -29,6 +34,7 @@ public class ControlPanel {
 	int rollnum =0;
 	private ClueGame games;
 	private ComputerPlayer comp;
+	private MakeAccusationPanel accPanel;
 
 	public ControlPanel(ClueGame game){
 		this.games = game;
@@ -51,21 +57,22 @@ public class ControlPanel {
 		b1 = new JButton("Next Player");
 		b1.addActionListener(new ActionListener(){ public void actionPerformed(ActionEvent e)
 		{
-			rollnum = roll.nextInt(6) + 1;
-			tf2.setText("" + rollnum);
-			if(!games.getBoard().isHumanTurn()) {
-				if(games.getCurrentPlayer() == games.getHuman()){
-					games.humanTurn(rollnum);
-				}
-				else{
-					games.computerTurn(rollnum);
-					games.repaint();
-				}
-
-
-
-				games.nextPlayer();
+			if(!games.isGameOver()) {
 				tf1.setText(games.getCurrentPlayer().getName());
+				rollnum = roll.nextInt(6) + 1;
+				if(!games.getBoard().isHumanTurn()) {
+					if(games.getCurrentPlayer() == games.getHuman()){
+						games.humanTurn(rollnum);
+					}
+					else{
+						games.computerTurn(rollnum);
+						games.repaint();
+						setGuess();
+					}
+
+
+					tf2.setText("" + rollnum);
+				}
 			}
 		}
 		});
@@ -73,8 +80,15 @@ public class ControlPanel {
 		b2 = new JButton("Make An Accusation");	
 		b2.addActionListener(new ActionListener(){ public void actionPerformed(ActionEvent e)
 		{
-			//add functionality
-			System.out.println("Button Pressed");
+			if(!games.isGameOver()) {
+				if(games.getBoard().isHumanTurn() && !games.getHuman().isMoved()) {
+					accPanel = new MakeAccusationPanel(games);
+					accPanel.setVisible(true);
+				}
+				else {
+					JOptionPane.showMessageDialog(null,"You cannot make an accusation at this time.", "ERROR!", JOptionPane.ERROR_MESSAGE);
+				}
+			}
 		}});
 	}
 
@@ -86,7 +100,7 @@ public class ControlPanel {
 		tf2.setText("" + rollnum);
 		tf2.setEditable(false);
 
-		tf3.setText("Guess");
+		tf3.setText("" + guessValue);
 		tf3.setEditable(false);
 
 		tf4.setText("Response");
@@ -125,6 +139,20 @@ public class ControlPanel {
 
 		return pane;
 
+	}
+
+	public void setGuess() {
+		Solution guess = games.getActiveSuggestion();
+		Card disprove = games.getDisproveCard();
+		if(guess == null)
+			tf3.setText("");
+		else
+			tf3.setText(guess.getPerson() + " - " + guess.getRoom() + " - " + guess.getWeapon());
+
+		if(disprove == null)
+			tf4.setText("No new clue");
+		else
+			tf4.setText(disprove.toString());
 	}
 
 }

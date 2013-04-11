@@ -31,4 +31,9 @@ public class Card {
 	public cardType getType() {
 		return type;
 	}
+	
+	@Override
+	public String toString() {
+		return card;
+	}
 }

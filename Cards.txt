@@ -1,4 +1,4 @@
-Miss Scarlet,PERSON
+Miss Scarlett,PERSON
 Colonel Mustard,PERSON
 Mrs. White,PERSON
 Reverend Green,PERSON

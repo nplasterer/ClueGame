@@ -20,6 +20,8 @@ import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
+import GUI.MakeAccusationPanel;
+
 import clueBoard.RoomCell.DoorDirection;
 
 public class Board extends JPanel {
@@ -36,9 +38,11 @@ public class Board extends JPanel {
 	private HashSet<BoardCell> targets;
 	private ArrayList<Integer> grid;
 	private ArrayList<Boolean> visited;
-	private ArrayList<Player> players;
+	private ArrayList<Player> players = new ArrayList<Player>();
 	private boolean humanTurn;
 	private HumanPlayer human;
+	private MakeAccusationPanel suggestionPanel;
+	private ClueGame game;
 
 	/******************************************************************************************************************
 	 * Board() 	- default constructor. Initializes:
@@ -59,7 +63,8 @@ public class Board extends JPanel {
 		addMouseListener(new BoardListener());
 	}
 
-	public Board(ArrayList<Player> player) {
+	public Board(ClueGame game) {
+		this.game = game;
 		cells = new ArrayList<BoardCell>();
 		rooms = new HashMap<Character, String>();
 		boardFile = "ClueLayout.csv";
@@ -68,7 +73,9 @@ public class Board extends JPanel {
 		targets = new HashSet<BoardCell>();
 		adjMatrix = new HashMap<Integer, LinkedList<Integer>>();
 		visited = new ArrayList<Boolean>();
-		players = player;
+		for(ComputerPlayer p : game.getComputer())
+			players.add(p);
+		players.add(this.game.getHuman());
 		addMouseListener(new BoardListener());
 	}
 
@@ -444,15 +451,14 @@ public class Board extends JPanel {
 	 * calcTargets() 	- sets up variables and data for the recursive call to calcTargetsRec()
 	 *****************************************************************************************************************/
 	public void calcTargets(int row, int column, int steps) {
-		for(Boolean b : visited)
-			b = false;
-		targets.clear();
+		for(int i = 0; i < visited.size(); i++) {
+			visited.set(i, false);
+		}
+		targets = new HashSet<BoardCell>();
 		int index = calcIndex(row, column);
 		visited.set(index, true);
+		calcAdjacencies();
 		calcTargetsRec(row, column, steps);
-		if(targets.size() == 0) {
-			System.out.println("**NO TARGETS FOUND**");
-		}
 	}
 
 	/******************************************************************************************************************
@@ -502,6 +508,7 @@ public class Board extends JPanel {
 
 	@Override
 	public void paintComponent(Graphics g){
+		ArrayList<Point> locations = new ArrayList<Point>();
 		super.paintComponent(g);
 		setLayout(new GridLayout(24, 24));
 		for(BoardCell c: cells){
@@ -510,7 +517,11 @@ public class Board extends JPanel {
 
 		if(players!=null){
 			for(Player p: players){
-				p.draw(g);
+				if(locations.contains(p.getLocation()))
+					p.drawOutline(g);
+				else
+					p.draw(g);
+				locations.add(p.getLocation());
 			}
 		}
 
@@ -567,13 +578,23 @@ public class Board extends JPanel {
 
 	public void checkClick(int x, int y){
 		
-		if(humanTurn) {
+		if(humanTurn && !human.isMadeAccusation()) {
 			for(BoardCell b : targets){
 				Rectangle rect = new Rectangle(b.getCellColumn()*25, b.getCellRow()*25, 25,25);
 				if(rect.contains(new Point(x,y))){
-					human.setLocation(new Point(b.getCellColumn(),b.getCellRow()));
+					Point location = new Point(b.getCellColumn(),b.getCellRow());
+					human.setLocation(location);
+					human.setMoved(true);
 					repaint();
-					this.humanTurn = false;
+					if(cells.get(calcIndex(location.y,location.x)).isRoom()) {
+						RoomCell room = (RoomCell) cells.get(calcIndex(location.y,location.x));
+						human.setCurrentRoom(this.getRooms().get(room.getRoomInitial()));
+						human.setMakingSuggestion(true);
+						suggestionPanel = new MakeAccusationPanel(game);
+						suggestionPanel.setVisible(true);
+					}
+					if(!cells.get(calcIndex(location.y,location.x)).isRoom())
+						this.humanTurn = false;
 					return;
 				}
 			}

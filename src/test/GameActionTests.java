@@ -70,8 +70,10 @@ public class GameActionTests {
 		//pick location with at least one room as a target
 		for(int i = 0; i < 100; i++) {
 			BoardCell selected = player.pickLocation(board.getTargets());
-			if (selected == board.getRoomCellAt(4, 6))
+			if (selected == board.getRoomCellAt(4, 6)) {
 				enteredRoom++;
+				player.setLastVistedRoom('0');
+			}
 		}
 		//ensure room is taken every time
 		Assert.assertEquals(enteredRoom, 100);
@@ -234,7 +236,7 @@ public class GameActionTests {
 		ComputerPlayer player = new ComputerPlayer();
 		java.awt.Point location = new java.awt.Point(9,19);
 		player.setLocation(location);
-		player.setCurrentRoom('D');
+		player.setCurrentRoom("Dining Room");
 		Card mustardCard = new Card("Colonel Mustard", Card.cardType.PERSON);
 		Card knifeCard = new Card ("Knife", Card.cardType.WEAPON);
 		Card libraryCard = new Card("Library", Card.cardType.ROOM);

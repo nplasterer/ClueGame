@@ -44,7 +44,9 @@ public class ClueGame extends JFrame{
 	private ArrayList<Card> cards;
 	private static ArrayList<Card> fullDeck;
 	private HumanPlayer human;
-	private boolean turn;
+	private boolean suggestionMade = false;
+	private Solution activeSuggestion = null;
+	private Card disproveCard = null;
 	private Player currentPlayer;
 	private int currentPlayerIndex = 0;
 	private String playerFile;
@@ -54,6 +56,7 @@ public class ClueGame extends JFrame{
 	private ControlPanel control;
 	private MyCards mycards;
 	private Board board;
+	private boolean gameOver = false;
 
 	public ClueGame() {
 		computer = new ArrayList<ComputerPlayer>();
@@ -63,7 +66,7 @@ public class ClueGame extends JFrame{
 		setPlayerFile("Players.txt");
 		setCardFile("Cards.txt");
 	}
-	
+
 	public void deal(){
 		selectAnswer();
 		ArrayList<Card> rooms = new ArrayList<Card>();
@@ -76,7 +79,7 @@ public class ClueGame extends JFrame{
 				weapons.add(c);
 			else
 				person.add(c);
-			
+
 		}
 		Random roller = new Random();
 		int cardIndex = roller.nextInt(rooms.size());
@@ -88,7 +91,7 @@ public class ClueGame extends JFrame{
 		cardIndex = roller.nextInt(person.size());
 		human.acceptCard(person.get(cardIndex));
 		cards.remove(person.get(cardIndex));
-		
+
 		int dealt = 0;
 		while(!cards.isEmpty()) {
 			int index = dealt % 5;
@@ -117,9 +120,9 @@ public class ClueGame extends JFrame{
 			cards.remove(cardIndex);
 			dealt++;
 		}
-		
+
 	}
-	
+
 	public void loadConfigFiles(){
 		try {
 			loadPlayerConfigFile(playerFile);
@@ -129,14 +132,11 @@ public class ClueGame extends JFrame{
 		} catch (BadConfigFormatException e) {
 			System.out.println(e);
 		}
-		
-		
+
+
 	}
-	
+
 	public void selectAnswer(){
-		String person;
-		String room;
-		String weapon;
 		ArrayList<Card> people = new ArrayList<Card>();
 		ArrayList<Card> rooms = new ArrayList<Card>();
 		ArrayList<Card> weapons = new ArrayList<Card>();
@@ -150,32 +150,51 @@ public class ClueGame extends JFrame{
 		}
 		Card selected = null;
 		Random roller = new Random();
-		
+
 		int index = roller.nextInt(people.size());
 		selected = people.get(index);
-		person = selected.getCard();
+		String person = selected.getCard();
 		cards.remove(selected);
-		
+
 		index = roller.nextInt(rooms.size());
 		selected = rooms.get(index);
-		room = selected.getCard();
+		String room = selected.getCard();
 		cards.remove(selected);
-		
+
 		index = roller.nextInt(weapons.size());
 		selected = weapons.get(index);
-		weapon = selected.getCard();
+		String weapon = selected.getCard();
 		cards.remove(selected);
-		
+
 		answer = new Solution(person,weapon,room);
 	}
-	
+
 	public Card handleSuggestion(Solution suggestion){
+		activeSuggestion = suggestion;
+		if(human.getName().equals(activeSuggestion.getPerson())) {
+			human.setLocation(computer.get(currentPlayerIndex).getLocation());
+		}
+		if(!board.isHumanTurn()) {
+			for(ComputerPlayer p: this.computer) {
+				if(p.getName().equals(activeSuggestion.getPerson()))
+					p.setLocation(computer.get(currentPlayerIndex).getLocation());
+			}
+		}
+		else {
+			for(ComputerPlayer p: this.computer) {
+				if(p.getName().equals(activeSuggestion.getPerson())) {
+					p.setLocation(human.getLocation());
+				}
+			}
+		}
+		board.repaint();
+		suggestionMade = true;
 		ArrayList<Player> players = new ArrayList<Player>();
 		ArrayList<Card> clues = new ArrayList<Card>();
-		if(currentPlayer != human)
+		if(!currentPlayer.equals(human))
 			players.add(human);
 		for(ComputerPlayer c : computer) {
-			if(currentPlayer != c)
+			if(!currentPlayer.equals(c))
 				players.add(c);
 		}
 		Random roller = new Random();
@@ -183,34 +202,37 @@ public class ClueGame extends JFrame{
 		while(!players.isEmpty()) {
 			int disproverIndex = roller.nextInt(players.size());
 			Player disprover = players.get(disproverIndex);
-			clues.add(disprover.disproveSuggestion(suggestion));
+			Card potentialClue = disprover.disproveSuggestion(suggestion);
+			if(potentialClue != null)
+				clues.add(potentialClue);
 			players.remove(disprover);
 		}
-		
-		
+
+
 		if(clues.size() == 0)
 			return null;
 		else {
 			int cardIndex = roller.nextInt(clues.size());
+			if(board.isHumanTurn()) {
+				activeSuggestion = suggestion;
+				disproveCard = clues.get(cardIndex);
+			}
 			return clues.get(cardIndex);
 		}
 	}
-	
+
 	public boolean checkAccusation(Solution solution){
 		boolean correct = true;
-		if(solution.getPerson() != answer.getPerson()) {
+		if(!solution.getPerson().equals(answer.getPerson()))
 			correct = false;
-		}
-		else if(solution.getRoom() != answer.getRoom()) {
+		else if(!solution.getRoom().equals(answer.getRoom()))
 			correct = false;
-		}
-		else if(solution.getWeapon() != answer.getWeapon()) {
+		else if(!solution.getWeapon().equals(answer.getWeapon()))
 			correct = false;
-		}
 		return correct;
 	}
 
-	
+
 	//load separate config files to test for exceptions
 	public void loadPlayerConfigFile(String file) throws FileNotFoundException, BadConfigFormatException {
 		FileReader playerReader = new FileReader(file);
@@ -223,11 +245,11 @@ public class ClueGame extends JFrame{
 		Point location;
 		String name;
 		java.awt.Color color;
-		
+
 		while(playerScanner.hasNextLine()) {
 			String inputLine = playerScanner.nextLine();
 			String[] parts = inputLine.split(",");
-			
+
 			//if first line, create human player
 			if(numRows == 0) {
 				//check for all data
@@ -240,9 +262,10 @@ public class ClueGame extends JFrame{
 					location = new Point(row,column);
 					color = convertColor(parts[3]);
 					human = new HumanPlayer(name, location, color);
+					human.createDeck(fullDeck);
 					this.human = human;
 				}
-				
+
 			}
 			//otherwise make computer player
 			else {
@@ -256,16 +279,17 @@ public class ClueGame extends JFrame{
 					location = new Point(row,column);
 					color = convertColor(parts[3]);
 					currentComputer = new ComputerPlayer(name, location, color);
+					currentComputer.createDeck(fullDeck);
 					this.computer.add(currentComputer);
 				}
 			}
 			numRows++;
 		}
 		playerScanner.close();
-		
+
 	}
-	
-    // Be sure to trim the color, we don't want spaces around the name
+
+	// Be sure to trim the color, we don't want spaces around the name
 	public Color convertColor(String strColor) {
 		Color color; 
 		try {     
@@ -277,7 +301,7 @@ public class ClueGame extends JFrame{
 		}
 		return color;
 	}
-	
+
 	public void loadCardConfigFile(String file) throws FileNotFoundException, BadConfigFormatException {
 		FileReader cardReader = new FileReader(file);
 		Scanner cardScanner = new Scanner(cardReader);
@@ -323,37 +347,37 @@ public class ClueGame extends JFrame{
 		add(board, BorderLayout.CENTER);
 		add(control.setup(currentPlayer), BorderLayout.SOUTH);
 		add(mycards.setup(human.getCards()), BorderLayout.EAST);
-		
+
 		setVisible(true);
 	}
-	
+
 	private JMenuItem createFileExitItem()
 	{
-	  JMenuItem item = new JMenuItem("Exit");
-	  class MenuItemListener implements ActionListener {
-	    public void actionPerformed(ActionEvent e)
-	    {
-	       System.exit(0);
-	    }
-	  }
-	  item.addActionListener(new MenuItemListener());
-	  return item;
+		JMenuItem item = new JMenuItem("Exit");
+		class MenuItemListener implements ActionListener {
+			public void actionPerformed(ActionEvent e)
+			{
+				System.exit(0);
+			}
+		}
+		item.addActionListener(new MenuItemListener());
+		return item;
 	}
-	
+
 	private JMenuItem showDetectiveNotes()
 	{
-	 final DetectiveNotes notes = new DetectiveNotes();
-	  JMenuItem item = new JMenuItem("Detective Notes");
-	  class MenuItemListener implements ActionListener {
-	    public void actionPerformed(ActionEvent e)
-	    {
-	       notes.Setup();
-	    }
-	  }
-	  item.addActionListener(new MenuItemListener());
-	  return item;
+		final DetectiveNotes notes = new DetectiveNotes();
+		JMenuItem item = new JMenuItem("Detective Notes");
+		class MenuItemListener implements ActionListener {
+			public void actionPerformed(ActionEvent e)
+			{
+				notes.Setup();
+			}
+		}
+		item.addActionListener(new MenuItemListener());
+		return item;
 	}
-	
+
 	//Getters and Setters for tests
 	public Solution getAnswer() {
 		return answer;
@@ -366,7 +390,7 @@ public class ClueGame extends JFrame{
 	public ArrayList<Card> getCards() {
 		return cards;
 	}
-	
+
 	public static ArrayList<Card> getFullDeck() {
 		return fullDeck;
 	}
@@ -382,8 +406,8 @@ public class ClueGame extends JFrame{
 	public HumanPlayer getHuman() {
 		return human;
 	}
-	
-	
+
+
 	public Player getCurrentPlayer() {
 		return currentPlayer;
 	}
@@ -407,11 +431,39 @@ public class ClueGame extends JFrame{
 	public void setCardFile(String cardFile) {
 		this.cardFile = cardFile;
 	}
-	
+
 	public Board getBoard() {
 		return this.board;
 	}
-	
+
+	public void setSuggestionActive(boolean suggestionActive) {
+		this.suggestionMade = suggestionActive;
+	}
+
+	public boolean isSuggestionActive() {
+		return suggestionMade;
+	}
+
+	public Solution getActiveSuggestion() {
+		return activeSuggestion;
+	}
+
+	public Card getDisproveCard() {
+		return disproveCard;
+	}
+
+	public boolean isGameOver() {
+		return gameOver;
+	}
+
+	public void setGameOver(boolean gameOver) {
+		this.gameOver = gameOver;
+	}
+
+	public ControlPanel getControl() {
+		return control;
+	}
+
 	public void splashScreen(){
 		//Do game setup
 		ArrayList<Player> players = new ArrayList<Player>();
@@ -419,11 +471,11 @@ public class ClueGame extends JFrame{
 		for(ComputerPlayer cp: getComputer())
 			players.add(cp);
 		players.add(getHuman());
-		board = new Board(players);
+		board = new Board(this);
 		board.loadConfigFiles();
 		deal();
 		currentPlayer = human;
-		
+
 		//Splash Screen
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		final JDialog dialog = new JDialog();
@@ -436,7 +488,7 @@ public class ClueGame extends JFrame{
 		dialog.add(okButton);
 		dialog.setLocationRelativeTo(null);
 		dialog.setVisible(true);
-		
+
 		okButton.addActionListener(new ActionListener(){ public void actionPerformed(ActionEvent e)
 		{
 			dialog.setVisible(false);
@@ -444,7 +496,7 @@ public class ClueGame extends JFrame{
 			drawBoard(board);
 		}});
 	}
-	
+
 	public void nextPlayer(){
 		if(currentPlayer.equals(human))
 			currentPlayer = computer.get(0);
@@ -459,28 +511,54 @@ public class ClueGame extends JFrame{
 			}
 		}
 	}
-	
+
 	public void computerTurn(int roll) {
-		System.out.println("" + computer.get(currentPlayerIndex).getLocation().y + " " + computer.get(currentPlayerIndex).getLocation().x + " " + roll);
-		
-		System.out.println("**TEST**");
-		board.calcTargets(14, 4, 1);
-		for(BoardCell b : board.getTargets())
-			System.out.print(b + " ");
-		System.out.println("");
-		System.out.println("**END TEST**");
-		
-		board.calcTargets(computer.get(currentPlayerIndex).getLocation().y,computer.get(currentPlayerIndex).getLocation().x,roll);
-		BoardCell chosenCell = computer.get(currentPlayerIndex).pickLocation(board.getTargets());
-		computer.get(currentPlayerIndex).setLocation(new Point(chosenCell.getCellColumn(),chosenCell.getCellRow()));
+		if(computer.get(currentPlayerIndex).isAccusationReady()) {
+			computer.get(currentPlayerIndex).setAccusationReady(false);
+			JOptionPane.showMessageDialog(this,computer.get(currentPlayerIndex).getName() + " is accusing: " + computer.get(currentPlayerIndex).getLastSuggestion(), "Accusation", JOptionPane.WARNING_MESSAGE);
+			if(checkAccusation(computer.get(currentPlayerIndex).getLastSuggestion())) {
+				gameOver = true;
+				JOptionPane.showMessageDialog(this,computer.get(currentPlayerIndex).getName() + " won. Solution: " + this.answer, "Game Over", JOptionPane.INFORMATION_MESSAGE);
+			}
+			else {
+				JOptionPane.showMessageDialog(this,computer.get(currentPlayerIndex).getName() + " was incorrect.", "", JOptionPane.INFORMATION_MESSAGE);
+			}
+		}
+		else {
+			board.calcTargets(computer.get(currentPlayerIndex).getLocation().y,computer.get(currentPlayerIndex).getLocation().x,roll);
+			BoardCell chosenCell = computer.get(currentPlayerIndex).pickLocation(board.getTargets());
+			computer.get(currentPlayerIndex).setLocation(new Point(chosenCell.getCellColumn(),chosenCell.getCellRow()));
+
+			if(chosenCell.isRoom()) {
+				RoomCell chosenRoom = (RoomCell) chosenCell;
+				String roomName = board.getRooms().get(chosenRoom.getRoomInitial());
+				computer.get(currentPlayerIndex).setCurrentRoom(roomName);
+				activeSuggestion = computer.get(currentPlayerIndex).createSuggestion();
+				// Move accused player to suggestion room
+				disproveCard = handleSuggestion(activeSuggestion);
+				if(disproveCard != null) {
+					for(ComputerPlayer p : computer) {
+						if(p != currentPlayer)
+							p.updateSeen(disproveCard);
+					}
+					human.updateSeen(disproveCard);
+				}
+				else
+					computer.get(currentPlayerIndex).setAccusationReady(true);
+			}
+		}
+		nextPlayer();
 	}
-	
+
 	public void humanTurn(int roll){
 		Graphics g = getGraphics();
 		board.calcTargets(human.getLocation().y, human.getLocation().x, roll);
+		human.setMoved(false);
+		human.setMadeAccusation(false);
 		board.setHumanTurn(true);
 		board.setHuman(human);
 		board.repaint();
+		nextPlayer();
 	}
 
 	public static void main(String[] args) {
@@ -492,11 +570,14 @@ public class ClueGame extends JFrame{
 		players.add(clue.getHuman());
 		Board board = new Board(players);
 		board.loadConfigFiles();
-		
+
 		clue.drawBoard(board);*/
 		clue.splashScreen();
-		/*clue.board.calcTargets(14, 4, 1);
-		for(BoardCell b : clue.board.getTargets())
-			System.out.println(b);*/
+		/*for(ComputerPlayer c :clue.getComputer()) {
+			for(Card card : c.getCards()) {
+				System.out.print(card.getCard() + " ");
+			}
+			System.out.println();
+		}*/
 	}
 }
